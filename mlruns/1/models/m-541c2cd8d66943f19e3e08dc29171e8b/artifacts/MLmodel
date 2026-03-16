@@ -1,0 +1,23 @@
+artifact_path: file:///D:/Resumes changer/sentiment project/sentiment-service/mlruns/1/models/m-541c2cd8d66943f19e3e08dc29171e8b/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.0
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.10.1
+model_id: m-541c2cd8d66943f19e3e08dc29171e8b
+model_size_bytes: 40710
+model_uuid: m-541c2cd8d66943f19e3e08dc29171e8b
+prompts: null
+run_id: 9ef2163cf3374dce98db14e4f7557015
+utc_time_created: '2026-03-16 21:39:55.376364'
