@@ -1,0 +1,10 @@
+datasets
+fastapi
+joblib
+mlflow
+pandas
+pydantic
+requests
+scikit-learn
+streamlit
+uvicorn
