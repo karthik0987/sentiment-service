@@ -1,127 +1,82 @@
 # Sentiment Analysis Microservice
 
-End-to-end ML pipeline for movie review sentiment classification. Built to go beyond Jupyter notebooks — this project covers data ingestion, model training with experiment tracking, a REST API for inference, and a web frontend, all containerized with Docker.
+A five-day, interview-focused ML engineering project for classifying IMDB movie reviews. It covers data validation, model training and comparison, experiment tracking, API serving, automated tests, and container preparation.
 
-## What it does
+## Current model and results
 
-You type in a movie review → the app tells you if it's positive or negative, along with a confidence score.
+- Training data: a reproducible sample of 10,000 IMDB reviews, with duplicate text removed before splitting.
+- Features: TF-IDF and the classifier are saved together as one scikit-learn pipeline.
+- Selection: four classifiers compared using five-fold stratified cross-validation and macro F1.
+- Selected classifier: SGD with log loss.
+- Mean cross-validation macro F1: **86.91%**.
+- Final held-out test accuracy: **86.08%** on 1,997 reviews.
+- Error analysis: 155 false positives and 123 false negatives in the held-out test set.
 
-Under the hood:
-- Pulls 10k IMDB reviews from HuggingFace Datasets (no static CSVs)
-- Trains a TF-IDF + Logistic Regression classifier (~87% accuracy)
-- Logs all experiments (params, metrics, model artifacts) to MLflow
-- Serves predictions through a FastAPI REST API
-- Streamlit frontend that talks to the API in real time
+MLflow records candidate comparisons, final metrics, and the selected pipeline. The local error report is written to `reports/error_analysis.csv`.
 
-## Tech Stack
+## Project structure
 
-- **ML/NLP:** scikit-learn, TF-IDF vectorization, Logistic Regression
-- **Data:** HuggingFace Datasets API
-- **Experiment Tracking:** MLflow
-- **Backend:** FastAPI + Uvicorn
-- **Frontend:** Streamlit
-- **Containerization:** Docker
-
-## Project Structure
-
-```
-sentiment-service/
-├── src/
-│   ├── train.py       # training pipeline + MLflow logging
-│   ├── predict.py     # inference module
-│   ├── api.py         # FastAPI endpoints
-│   └── app.py         # Streamlit UI
-├── models/            # saved model + vectorizer (.joblib)
-├── data/              # cached dataset
-├── Dockerfile
-├── requirements.txt
-└── README.md
+```text
+src/train.py                 Data loading, validation, comparison, training, MLflow
+src/config.py                API configuration
+src/predict.py               Model loading and prediction service
+src/api.py                   FastAPI validation, endpoints, and request logging
+src/app.py                   Optional Streamlit frontend
+tests/                       Pytest data, prediction, and API tests
+models/pipeline.joblib       Selected trained pipeline
+.github/workflows/tests.yml  GitHub Actions test workflow
+Dockerfile                   FastAPI container image
 ```
 
-## Setup
+## Setup on Windows PowerShell
 
-```bash
-# clone and enter the project
-git clone https://github.com/yourusername/sentiment-service.git
-cd sentiment-service
+From the project root:
 
-# create a virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# install dependencies
-pip install -r requirements.txt
-
-# train the model (downloads data + logs to MLflow)
-python src/train.py
+```powershell
+py -3.11 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+& .\.venv\Scripts\python.exe -m pytest -q tests
 ```
 
-## Running
+To retrain and compare models:
 
-You need two terminals:
-
-**Terminal 1 — API server:**
-```bash
-uvicorn src.api:app --reload --port 8000
+```powershell
+& .\.venv\Scripts\python.exe src\train.py
 ```
 
-**Terminal 2 — Streamlit frontend:**
-```bash
-streamlit run src/app.py
+Training may download IMDB from Hugging Face; if it is unavailable, the datasets library may use its local cache. The script creates `data/` for its sample CSV, logs experiments to MLflow, and saves the selected pipeline in `models/`.
+
+## Run the API
+
+```powershell
+& .\.venv\Scripts\python.exe -m uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
-Then open `http://localhost:8501` in your browser.
+Open `http://127.0.0.1:8000/docs` to try `POST /predict` or `GET /health`. A prediction request looks like:
 
-## API Usage
-
-Health check:
-```bash
-curl http://localhost:8000/health
-```
-
-Predict sentiment:
-```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"text": "This movie was absolutely fantastic"}'
-```
-
-Response:
 ```json
-{
-  "text": "This movie was absolutely fantastic",
-  "sentiment": "positive",
-  "confidence": 0.9312
-}
+{"text": "This movie was excellent."}
 ```
 
-Interactive docs available at `http://localhost:8000/docs`.
+The API strips surrounding whitespace, rejects invalid input with HTTP 422, and returns a sentiment label and estimated confidence. It logs request path, status, and duration without logging review text.
 
-## MLflow Dashboard
+The optional frontend runs separately:
 
-After training, you can inspect logged experiments:
-
-```bash
-mlflow ui
+```powershell
+& .\.venv\Scripts\python.exe -m streamlit run src\app.py
 ```
-
-Opens at `http://localhost:5000`. Shows all runs with hyperparameters, accuracy, precision, recall, F1, and saved model artifacts.
 
 ## Docker
 
-```bash
+The Docker image runs the FastAPI service. It copies the selected `models/pipeline.joblib`; commit that artifact with the application before building from a fresh checkout. Other generated model files, datasets, MLflow runs, and reports are ignored by Git.
+
+```powershell
 docker build -t sentiment-service .
-docker run -p 8000:8000 -p 8501:8501 sentiment-service
+docker run --rm -p 8000:8000 sentiment-service
 ```
 
-## Things I'd improve with more time
+Then open `http://localhost:8000/docs`. Docker is not installed in the current Windows environment, so an image build and container run have not yet been verified here.
 
-- Swap Logistic Regression for a fine-tuned DistilBERT (would push accuracy to ~93%)
-- Add CI/CD with GitHub Actions to retrain on new data
-- Set up model versioning with MLflow Model Registry
-- Add batch prediction endpoint for bulk reviews
-- Deploy on AWS (EC2 or ECS) with a proper domain
+## CI and next production steps
 
-## License
-
-MIT
+`.github/workflows/tests.yml` runs pytest on pushes and pull requests, and both have passed on GitHub. Container runtime verification, deployment, and persistent monitoring remain to be completed.

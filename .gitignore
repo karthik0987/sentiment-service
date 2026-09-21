@@ -1,0 +1,24 @@
+# Python virtual environments
+.venv/
+venv/
+
+# Python-generated cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local configuration and secrets
+.env
+
+# Generated ML outputs
+data/
+models/*
+!models/pipeline.joblib
+mlruns/
+mlartifacts/
+reports/
+
+# Editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db

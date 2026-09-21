@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.env
+data
+mlruns
+mlartifacts
+reports
+tests
+models/*
+!models/pipeline.joblib
