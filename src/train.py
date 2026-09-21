@@ -42,6 +42,9 @@ def validate_data(df):
     if df["text"].isna().any():
         raise ValueError("The dataset contains missing review text")
 
+    if df["text"].map(lambda value: not isinstance(value, str)).any():
+        raise ValueError("The dataset contains non-text reviews")
+
     if df["text"].str.strip().eq("").any():
         raise ValueError("The dataset contains empty reviews")
 

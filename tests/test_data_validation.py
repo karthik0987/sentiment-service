@@ -34,6 +34,13 @@ def test_missing_review_text_is_rejected(valid_data):
         validate_data(valid_data)
 
 
+def test_non_text_review_is_rejected(valid_data):
+    valid_data["text"] = valid_data["text"].astype(object)
+    valid_data.loc[0, "text"] = 123
+    with pytest.raises(ValueError, match="non-text reviews"):
+        validate_data(valid_data)
+
+
 def test_whitespace_only_review_is_rejected(valid_data):
     valid_data.loc[0, "text"] = "   "
     with pytest.raises(ValueError, match="empty reviews"):
