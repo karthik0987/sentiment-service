@@ -79,4 +79,4 @@ Then open `http://localhost:8000/docs`. Docker is not installed in the current W
 
 ## CI and next production steps
 
-`.github/workflows/tests.yml` runs pytest on pushes and pull requests after these files are committed and pushed. The local test suite currently passes. Container runtime verification, remote CI verification, deployment, and persistent monitoring remain to be completed.
+`.github/workflows/tests.yml` runs pytest on pushes and pull requests, and both have passed on GitHub. Container runtime verification, deployment, and persistent monitoring remain to be completed.
