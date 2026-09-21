@@ -41,7 +41,7 @@ class SentimentPredictor:
 
     def predict(self, text: str) -> dict:
         if not self.is_loaded:
-            raise RuntimeError("The sentiment model has not been loaded")
+            raise PredictionError("The sentiment model has not been loaded")
 
         try:
             prediction = self.pipeline.predict([text])[0]

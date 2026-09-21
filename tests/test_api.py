@@ -50,6 +50,17 @@ def test_health_reports_unavailable_model(client):
     assert response.json() == {"status": "unhealthy", "model_loaded": False}
 
 
+def test_predict_reports_unavailable_model(client):
+    predictor.pipeline = None
+
+    response = client.post("/predict", json={"text": "Great movie"})
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": "Prediction service is temporarily unavailable"
+    }
+
+
 def test_valid_review_returns_prediction(client):
     response = client.post("/predict", json={"text": "  Great movie  "})
 
