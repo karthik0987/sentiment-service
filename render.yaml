@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: sentiment-service
+    runtime: docker
+    plan: free
+    region: ohio
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
