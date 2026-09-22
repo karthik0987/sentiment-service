@@ -72,11 +72,19 @@ The Docker image runs the FastAPI service. It copies the selected `models/pipeli
 
 ```powershell
 docker build -t sentiment-service .
-docker run --rm -p 8000:8000 sentiment-service
+docker run --detach --rm --name sentiment-service --publish 8000:8000 sentiment-service
 ```
 
-Then open `http://localhost:8000/docs`. Docker is not installed in the current Windows environment, so an image build and container run have not yet been verified here.
+Then open `http://localhost:8000/docs`. The image build, API startup, model loading, `/health`, and positive and negative predictions have been verified locally with Docker Desktop.
+
+The image includes a Docker health check that calls `/health`. Check its status with:
+
+```powershell
+docker inspect sentiment-service --format "{{.State.Health.Status}}"
+```
+
+A ready container reports `healthy`. Stop and remove the temporary container with `docker stop sentiment-service`.
 
 ## CI and next production steps
 
-`.github/workflows/tests.yml` runs pytest on pushes and pull requests, and both have passed on GitHub. Container runtime verification, deployment, and persistent monitoring remain to be completed.
+`.github/workflows/tests.yml` runs pytest on pushes and pull requests, and both have passed on GitHub. Deployment and external monitoring remain to be completed.
