@@ -1,6 +1,71 @@
 # Sentiment Analysis Microservice
 
-A five-day, interview-focused ML engineering project for classifying IMDB movie reviews. It covers data validation, model training and comparison, experiment tracking, API serving, automated tests, and container preparation.
+A five-day, interview-focused ML engineering project for classifying IMDB movie reviews. It covers data validation, model training and comparison, experiment tracking, API serving, automated tests, containerization, CI, and cloud deployment.
+
+## Live deployment
+
+The FastAPI service is deployed on Render:
+
+- Interactive API documentation: https://sentiment-service-ugie.onrender.com/docs
+- Health check: https://sentiment-service-ugie.onrender.com/health
+- Prediction endpoint: `POST https://sentiment-service-ugie.onrender.com/predict`
+
+The deployed service has been verified with a loaded model and a real prediction request.
+
+> Render's free instance can sleep after inactivity. The first request after it sleeps may take 50 seconds or longer while the service starts again.
+
+### Try a prediction
+
+PowerShell:
+
+```powershell
+$body = @{
+    text = "This movie was excellent and I loved every minute."
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+    -Uri "https://sentiment-service-ugie.onrender.com/predict" `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body $body
+```
+
+Request body:
+
+```json
+{
+  "text": "This movie was excellent and I loved every minute."
+}
+```
+
+Example response:
+
+```json
+{
+  "text": "This movie was excellent and I loved every minute.",
+  "sentiment": "positive",
+  "confidence": 0.9621
+}
+```
+
+## System flow
+
+```text
+Review text
+    |
+    v
+FastAPI input validation
+    |
+    v
+Saved scikit-learn pipeline
+    |
+    +--> TF-IDF converts text into numeric features
+    |
+    +--> SGD classifier predicts sentiment
+    |
+    v
+JSON response: sentiment + confidence
+```
 
 ## Current model and results
 
@@ -21,11 +86,12 @@ src/train.py                 Data loading, validation, comparison, training, MLf
 src/config.py                API configuration
 src/predict.py               Model loading and prediction service
 src/api.py                   FastAPI validation, endpoints, and request logging
-src/app.py                   Optional Streamlit frontend
-tests/                       Pytest data, prediction, and API tests
+src/app.py                   Optional local Streamlit frontend
 models/pipeline.joblib       Selected trained pipeline
+tests/                       Pytest data, prediction, and API tests
 .github/workflows/tests.yml  GitHub Actions test workflow
 Dockerfile                   FastAPI container image
+render.yaml                  Render deployment configuration
 ```
 
 ## Setup on Windows PowerShell
@@ -46,25 +112,25 @@ To retrain and compare models:
 
 Training may download IMDB from Hugging Face; if it is unavailable, the datasets library may use its local cache. The script creates `data/` for its sample CSV, logs experiments to MLflow, and saves the selected pipeline in `models/`.
 
-## Run the API
+## Run the API locally
 
 ```powershell
 & .\.venv\Scripts\python.exe -m uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000/docs` to try `POST /predict` or `GET /health`. A prediction request looks like:
-
-```json
-{"text": "This movie was excellent."}
-```
+Open `http://127.0.0.1:8000/docs` to try `POST /predict` or `GET /health`.
 
 The API strips surrounding whitespace, rejects invalid input with HTTP 422, and returns a sentiment label and estimated confidence. It logs request path, status, and duration without logging review text.
 
-The optional frontend runs separately:
+## Optional local frontend
+
+The repository contains a Streamlit prototype for local use:
 
 ```powershell
 & .\.venv\Scripts\python.exe -m streamlit run src\app.py
 ```
+
+The Streamlit page calls the FastAPI service at `http://localhost:8000`, so start the local API before using it. Render currently deploys the FastAPI service and its Swagger interface; the Streamlit prototype is not part of the public deployment.
 
 ## Docker
 
@@ -85,6 +151,9 @@ docker inspect sentiment-service --format "{{.State.Health.Status}}"
 
 A ready container reports `healthy`. Stop and remove the temporary container with `docker stop sentiment-service`.
 
-## CI and next production steps
+## CI, deployment, and monitoring
 
-`.github/workflows/tests.yml` runs pytest on pushes and pull requests, and both have passed on GitHub. Deployment and external monitoring remain to be completed.
+- `.github/workflows/tests.yml` runs pytest for pushes and pull requests.
+- Render builds the Docker image after checks pass on the `main` branch.
+- Render calls `/health` to verify that the application and model are ready.
+- The API logs request method, path, status, and duration for operational visibility without recording review text.
