@@ -6,6 +6,7 @@ A five-day, interview-focused ML engineering project for classifying IMDB movie 
 
 The FastAPI service is deployed on Render:
 
+- Web application: https://sentiment-service-ugie.onrender.com/
 - Interactive API documentation: https://sentiment-service-ugie.onrender.com/docs
 - Health check: https://sentiment-service-ugie.onrender.com/health
 - Prediction endpoint: `POST https://sentiment-service-ugie.onrender.com/predict`
@@ -86,6 +87,7 @@ src/train.py                 Data loading, validation, comparison, training, MLf
 src/config.py                API configuration
 src/predict.py               Model loading and prediction service
 src/api.py                   FastAPI validation, endpoints, and request logging
+src/static/index.html        Public sentiment-analysis interface
 src/app.py                   Optional local Streamlit frontend
 models/pipeline.joblib       Selected trained pipeline
 tests/                       Pytest data, prediction, and API tests
@@ -130,7 +132,7 @@ The repository contains a Streamlit prototype for local use:
 & .\.venv\Scripts\python.exe -m streamlit run src\app.py
 ```
 
-The Streamlit page calls the FastAPI service at `http://localhost:8000`, so start the local API before using it. Render currently deploys the FastAPI service and its Swagger interface; the Streamlit prototype is not part of the public deployment.
+The Streamlit page calls the FastAPI service at `http://localhost:8000`, so start the local API before using it. Render serves the public HTML interface from FastAPI at `/`. The older Streamlit prototype remains available for local experimentation and is not part of the public deployment.
 
 ## Docker
 

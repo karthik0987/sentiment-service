@@ -1,16 +1,18 @@
 import logging
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 from src.config import settings
 from src.predict import PredictionError, SentimentPredictor
 
 predictor = SentimentPredictor(settings.model_path)
+interface_path = Path(__file__).with_name("static") / "index.html"
 logger = logging.getLogger("uvicorn.error")
 
 
@@ -27,6 +29,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.get("/", include_in_schema=False)
+def interface():
+    return FileResponse(interface_path)
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):
