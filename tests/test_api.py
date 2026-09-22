@@ -101,6 +101,14 @@ def test_model_failure_returns_safe_503(client):
     assert "Internal model detail" not in response.text
 
 
+def test_home_page_serves_sentiment_interface(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "SceneSense" in response.text
+    assert "fetch('/predict'" in response.text
+
 def test_docs_are_available(client):
     response = client.get("/docs")
 
