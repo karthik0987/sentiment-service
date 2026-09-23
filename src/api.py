@@ -6,13 +6,15 @@ from typing import Literal
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
 from src.config import settings
 from src.predict import PredictionError, SentimentPredictor
 
 predictor = SentimentPredictor(settings.model_path)
-interface_path = Path(__file__).with_name("static") / "index.html"
+static_dir = Path(__file__).with_name("static")
+interface_path = static_dir / "index.html"
 logger = logging.getLogger("uvicorn.error")
 
 
@@ -29,10 +31,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 
 @app.get("/", include_in_schema=False)
 def interface():
     return FileResponse(interface_path)
+
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):
