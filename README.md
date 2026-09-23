@@ -1,6 +1,6 @@
-# Sentiment Analysis Microservice
+# Sentiment Service
 
-A five-day, interview-focused ML engineering project for classifying IMDB movie reviews. It covers data validation, model training and comparison, experiment tracking, API serving, automated tests, containerization, CI, and cloud deployment.
+A sentiment analysis service for IMDB movie reviews, with reproducible training, model comparison, MLflow experiment tracking, a FastAPI inference API, automated tests, Docker packaging, CI, and a browser interface.
 
 ## Live deployment
 
@@ -87,8 +87,10 @@ src/train.py                 Data loading, validation, comparison, training, MLf
 src/config.py                API configuration
 src/predict.py               Model loading and prediction service
 src/api.py                   FastAPI validation, endpoints, and request logging
-src/static/index.html        Public sentiment-analysis interface
-src/app.py                   Optional local Streamlit frontend
+src/static/                  Browser interface assets
+    index.html                 Page structure
+    styles.css                 Interface styling
+    app.js                     Prediction requests and result display
 models/pipeline.joblib       Selected trained pipeline
 tests/                       Pytest data, prediction, and API tests
 .github/workflows/tests.yml  GitHub Actions test workflow
@@ -123,16 +125,6 @@ Training may download IMDB from Hugging Face; if it is unavailable, the datasets
 Open `http://127.0.0.1:8000/docs` to try `POST /predict` or `GET /health`.
 
 The API strips surrounding whitespace, rejects invalid input with HTTP 422, and returns a sentiment label and estimated confidence. It logs request path, status, and duration without logging review text.
-
-## Optional local frontend
-
-The repository contains a Streamlit prototype for local use:
-
-```powershell
-& .\.venv\Scripts\python.exe -m streamlit run src\app.py
-```
-
-The Streamlit page calls the FastAPI service at `http://localhost:8000`, so start the local API before using it. Render serves the public HTML interface from FastAPI at `/`. The older Streamlit prototype remains available for local experimentation and is not part of the public deployment.
 
 ## Docker
 

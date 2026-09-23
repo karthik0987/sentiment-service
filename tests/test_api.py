@@ -103,11 +103,15 @@ def test_model_failure_returns_safe_503(client):
 
 def test_home_page_serves_sentiment_interface(client):
     response = client.get("/")
+    script = client.get("/static/app.js")
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
-    assert "SceneSense" in response.text
-    assert "fetch('/predict'" in response.text
+    assert "Sentiment Service" in response.text
+    assert 'src="/static/app.js"' in response.text
+    assert script.status_code == 200
+    assert 'fetch("/predict"' in script.text
+
 
 def test_docs_are_available(client):
     response = client.get("/docs")
